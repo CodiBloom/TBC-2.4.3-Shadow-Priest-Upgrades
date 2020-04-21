@@ -1,0 +1,247 @@
+import sqlite3
+from tkinter import *
+
+#Create root window.
+root = Tk()
+root.title('TBC 2.4.3 Shadow Priest Gear Evaluation & Upgrades')
+#root.geometry('{}x{}'.format(600,500))
+
+#Create and place frames in the root window.
+firstFrame = Frame(root, height=250, width=300)
+secondFrame = Frame(root, height=250, width=300)
+firstFrame.grid(row=0, sticky=W)
+secondFrame.grid(row=0, column=1, sticky=E)
+
+#Establish DB connection.
+conn = sqlite3.connect('2.4.3 Shadow Priest')
+c = conn.cursor()
+
+#Fetch items from the helm table and create a variable to store the data.
+c.execute('SELECT itemName FROM helm')
+choices = c.fetchall()
+
+#Create an empty list to clean up the raw data from the helm table.
+stringList = []
+
+#Function to convert the data from helm table into usable strings.
+def createStrings(list):
+
+    for item in list:
+        item = str(item)
+        item = item[2:-3]
+        stringList.append(item)
+
+#Call the function to create the strings.
+createStrings(choices)
+
+#Create Tk variable to use with drop-down menu for gear selection.
+tkVar = StringVar(root)
+
+#Set the default choice in the drop-down as well as initializing the select variable.
+tkVar.set(stringList[0])
+select = stringList[0]
+
+#Variable string initialization for display in firstFrame.
+selection = []
+itemName = StringVar()
+intellect = StringVar()
+spirit = StringVar()
+spellHit = StringVar()
+spellCrit = StringVar()
+spellHaste = StringVar()
+spellDamage = StringVar()
+sockets = StringVar()
+socketBonus = StringVar()
+metaSocket = StringVar()
+dropsFrom = StringVar()
+itemType = StringVar()
+
+#Variable string initialization for display in secondFrame.
+totalIntellect = StringVar()
+totalSpirit = StringVar()
+totalSpellHit = StringVar()
+totalSpellCrit = StringVar()
+totalSpellHaste = StringVar()
+totalSpellDamage = StringVar()
+totalSockets = StringVar()
+
+#Create the drop-down menu and labels in firstFrame.
+popupMenu = OptionMenu(firstFrame, tkVar, *stringList)
+choiceLabel = Label(firstFrame, text='Choose your helm: ')
+itemNameLabel = Label(firstFrame, fg='red', textvariable=itemName)
+intellectLabel = Label(firstFrame, textvariable=intellect)
+intellectTextLabel = Label(firstFrame, text='Intellect: ')
+spiritLabel = Label(firstFrame, textvariable=spirit)
+spiritTextLabel = Label(firstFrame, text='Spirit: ')
+spellHitLabel = Label(firstFrame, textvariable=spellHit)
+spellHitTextLabel = Label(firstFrame, text='Spell Hit: ')
+spellCritLabel = Label(firstFrame, textvariable=spellCrit)
+spellCritTextLabel = Label(firstFrame, text='Spell Crit: ')
+spellHasteLabel = Label(firstFrame, textvariable=spellHaste)
+spellHasteTextLabel = Label(firstFrame, text='Spell Haste: ')
+spellDamageLabel = Label(firstFrame, textvariable=spellDamage)
+spellDamageTextLabel = Label(firstFrame, text='Spell Damage: ')
+socketsLabel = Label(firstFrame, textvariable=sockets)
+socketsTextLabel = Label(firstFrame, text='# of Sockets: ')
+socketBonusLabel = Label(firstFrame, textvariable=socketBonus)
+socketBonusTextLabel = Label(firstFrame, text='Socket Bonus: ')
+metaSocketLabel = Label(firstFrame, textvariable=metaSocket)
+metaSocketTextLabel = Label(firstFrame, text='Meta Socket (T/F): ')
+dropsFromLabel = Label(firstFrame, textvariable=dropsFrom)
+dropsFromTextLabel = Label(firstFrame, text='Drops From: ')
+itemTypeLabel = Label(firstFrame, textvariable=itemType)
+itemTypeTextLabel = Label(firstFrame, text='Item Type: ')
+
+#Create lables in secondFrame.
+totalStatsLabel = Label(secondFrame, text='Total Stats of Selected Gear')
+totalIntTextLabel = Label(secondFrame, text='Intellect: ')
+totalSpiritTextLabel = Label(secondFrame, text='Spirit: ')
+totalSpellHitTextLabel = Label(secondFrame, text='Spell Hit: ')
+totalSpellCritTextLabel = Label(secondFrame, text='Spell Crit: ')
+totalSpellHasteTextLabel = Label(secondFrame, text='Spell Haste: ')
+totalSpellDamageTextLabel = Label(secondFrame, text='Spell Damage: ')
+totalSocketsTextLabel = Label(secondFrame, text='Sockets: ')
+totalMetaSocketTextLabel = Label(secondFrame, text='Meta Socket (T/F): ')
+
+#Place the drop-down menu and labels in firstFrame.
+choiceLabel.grid(row=0,column=0)
+popupMenu.grid(row=0,column=1)
+itemNameLabel.grid(row=2,columnspan=2)
+intellectTextLabel.grid(row=3,column=0)
+intellectLabel.grid(row=3,column=1)
+spiritTextLabel.grid(row=4,column=0)
+spiritLabel.grid(row=4,column=1)
+spellHitTextLabel.grid(row=5)
+spellHitLabel.grid(row=5,column=1)
+spellCritTextLabel.grid(row=6)
+spellCritLabel.grid(row=6,column=1)
+spellHasteTextLabel.grid(row=7)
+spellHasteLabel.grid(row=7,column=1)
+spellDamageTextLabel.grid(row=8)
+spellDamageLabel.grid(row=8,column=1)
+socketsTextLabel.grid(row=9)
+socketsLabel.grid(row=9,column=1)
+socketBonusTextLabel.grid(row=10)
+socketBonusLabel.grid(row=10,column=1)
+metaSocketTextLabel.grid(row=11)
+metaSocketLabel.grid(row=11,column=1)
+dropsFromTextLabel.grid(row=12)
+dropsFromLabel.grid(row=12,column=1)
+itemTypeTextLabel.grid(row=13)
+itemTypeLabel.grid(row=13,column=1)
+
+#Place the labes in secondFrame.
+totalStatsLabel.grid(row=0, columnspan=2)
+totalIntTextLabel.grid(row=1)
+totalSpiritTextLabel.grid(row=2)
+totalSpellHitTextLabel.grid(row=3)
+totalSpellCritTextLabel.grid(row=4)
+totalSpellHasteTextLabel.grid(row=5)
+totalSpellDamageTextLabel.grid(row=6)
+totalSocketsTextLabel.grid(row=7)
+totalMetaSocketTextLabel.grid(row=8)
+
+#Function to handle button click and display the selection as a label. Also initializes variable for DB update and calls DB commit function.
+def confirmSelection(select):
+    global itemName, intellect, spirit, spellHit, spellCrit, spellHaste, spellDamage, sockets, socketBonus, metaSocket, dropsFrom, selection
+
+    selectionString = 'SELECT * FROM helm WHERE itemName=\"' + select + '\"'
+    c.execute(selectionString)
+    selection = c.fetchall()
+    c.execute(selectionString)
+    select = c.fetchall()
+    selection = selection[0]
+
+    c.execute('SELECT itemName FROM playerGear WHERE itemType=\"' + selection[13] + '\"')
+    doesItExist = c.fetchall()
+
+    if doesItExist != 'NULL':
+        c.execute('SELECT * FROM playerGear WHERE itemType=\"' + selection[13] + '\"')
+        currentItem = c.fetchall()
+        #print(currentItem)
+
+
+    itemName.set(selection[0] + ' selected!')
+    intellect.set(selection[1])
+    spirit.set(selection[3])
+    spellHit.set(selection[4])
+    spellCrit.set(selection[5])
+    spellHaste.set(selection[6])
+    spellDamage.set(selection[8])
+    sockets.set(selection[10])
+    socketBonus.set(selection[12])
+    metaSocket.set(selection[11])
+    dropsFrom.set(selection[9])
+    itemType.set(selection[13])
+
+    #updateDbTuple = (selection[0], selection[1], selection[3], selection[4], selection[5], selection[6], selection[8], selection[10], selection[12], selection[11], selection[9], selection[13])
+    #commitSelectionToDb(updateDbTuple)
+
+    createTotalStats(select)
+
+#Function to commit the player's choice to the DB.
+def commitSelectionToDb(itemTuple):
+
+    sql_update_query = 'UPDATE playerGear SET itemName=?, intellect=?, spirit=?, spellHit=?, spellCrit=?, spellHaste=?, spellDamage=?, sockets=?, socketBonus=?, metaSocket=?, dropsFrom=? WHERE itemType=?'
+    c.execute(sql_update_query, itemTuple)
+    conn.commit()
+
+def createTotalStats(items):
+
+    itemList = []
+
+    for item in items:
+        table = item[13]
+        itemNameForQuery = item[0]
+        sql_query = 'SELECT * FROM ' + table + ' WHERE itemName=\"' + itemNameForQuery + '\"'
+        c.execute(sql_query)
+        query = c.fetchall()
+        query = query[0]
+        print(query)
+        itemList.append(query)
+
+        queryCurrentStats = 'SELECT * FROM playerGear WHERE itemType=\"' + table + '\"'
+        c.execute(queryCurrentStats)
+        currentStats = c.fetchall()
+        currentStats = currentStats[0]
+        print(currentStats)
+        print(currentStats[2])
+        print(query[1])
+
+        queryCurrentTotal = 'SELECT * FROM playerTotalStats'
+        c.execute(queryCurrentTotal)
+        totalQuery = c.fetchall()
+        print(totalQuery)
+
+    #print(itemList)
+
+
+#Create button for player to confirm their helm selection.
+selectionButton = Button(firstFrame, text='Confirm Selection', command=lambda: confirmSelection(select))
+selectionButton.grid(row=1, columnspan=2)
+
+#Function to handle changing the drop-down choice and get the new selection.
+def change_dropdown(*args):
+    global select
+    select = str(tkVar.get())
+
+#No idea what this does... :')
+tkVar.trace('w', change_dropdown)
+
+#Mainloop to keep the window running until closed.
+root.mainloop()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
